@@ -1,7 +1,9 @@
 ﻿
 
+using System.Reflection;
 using AusDevsBot;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 
 // todo fix this to use microsoft.extensions.configuration
@@ -27,9 +29,27 @@ ulong guildId = ulong.Parse(tokens.First(x => x.Item1 == "GUILD_ID").Item2);;
 
 
 
-DiscordSocketClient client = new DiscordSocketClient();
+DiscordSocketClient client = new DiscordSocketClient(new DiscordSocketConfig()
+{
+    GatewayIntents = GatewayIntents.MessageContent | GatewayIntents.AllUnprivileged
+});
+
+// load the text-based commands from the assembly
+CommandService commands = new CommandService(new CommandServiceConfig()
+{
+    CaseSensitiveCommands = false,
+});
+
+await commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), 
+    services: null);
+
+Console.WriteLine("registered text commands: " + string.Join(',', commands.Commands.Select(x => x.Name)));
+client.MessageReceived += HandleCommandAsync;
+
 
 var builder = new BotCommandBuilder();
+
+
 
 // todo use serilog
 client.Log += message =>
@@ -81,14 +101,14 @@ client.Ready += async () =>
                 Description = "An id to identify this snippet to quickly find it later"
             });
 
-        await builder.AddCommand("fetch", "fetch a snippet by id", async command =>
+        await builder.AddCommand("quick-save", "quick save a message", async command =>
         {
-
+            
         }, new SlashCommandOptionBuilder()
         {
-            Name = "id",
-            Description = "Get a snippet by id",
+            Name = "quick-id",
             Type = ApplicationCommandOptionType.String,
+            Description = "An id to identify this snippet to quickly find it later"
         });
             
         client.SlashCommandExecuted += builder.HandleIncomingSlashCommands;
@@ -104,6 +124,35 @@ await client.LoginAsync(TokenType.Bot, discordToken);
 await client.StartAsync();
 
 
-
+// todo: convert to worker service
 // infinite delay
 await Task.Delay(-1);
+
+return;
+
+
+async Task HandleCommandAsync(SocketMessage messageParam)
+{
+    Console.WriteLine("received message");
+    // Don't process the command if it was a system message
+    var message = messageParam as SocketUserMessage;
+    if (message == null) return;
+    Console.WriteLine($"msg not null: {message.Content}");
+    // Create a number to track where the prefix ends and the command begins
+    
+    int argPos = 0;
+    // Determine if the message is a command based on the prefix and make sure no bots trigger commands
+    if (!message.HasCharPrefix('!', ref argPos) ) // || message.Author.IsBot
+        return;
+    
+    Console.WriteLine($"arg pos: {argPos}");
+    // Create a WebSocket-based command context based on the message
+    var context = new SocketCommandContext(client, message);
+
+    // Execute the command with the command context we just
+    // created, along with the service provider for precondition checks.
+    await commands.ExecuteAsync(
+        context: context, 
+        argPos: argPos,
+        services: null);
+}
