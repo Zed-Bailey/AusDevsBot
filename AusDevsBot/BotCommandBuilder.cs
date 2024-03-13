@@ -15,23 +15,24 @@ public class BotCommandBuilder
 
     public BotCommandBuilder() { }
 
-    public BotCommandBuilder WithGuild(SocketGuild guild)
+    public void WithGuild(SocketGuild guild)
     {
         _guild = guild;
-        return this;
     }
 
 
-    public async Task<BotCommandBuilder> AddCommand(string name, string description, Func<SocketSlashCommand, Task> commandHandler)
+    public async Task AddCommand(string name, string description, Func<SocketSlashCommand, Task> commandHandler, params SlashCommandOptionBuilder[] options)
     {
         if (_guild == null)
         {
             throw new ArgumentNullException("No guild has been registered");
         }
         
-        var command = new SlashCommandBuilder();
-        command.WithName(name);
-        command.WithDescription(description);
+        var command = new SlashCommandBuilder()
+            .WithName(name)
+            .WithDescription(description)
+            .AddOptions(options);
+        
 
         try
         {
@@ -45,8 +46,6 @@ public class BotCommandBuilder
             // todo: logging
             Console.WriteLine(json);
         }
-        
-        return this;
     }
 
     public async Task HandleIncomingSlashCommands(SocketSlashCommand command)

@@ -16,7 +16,7 @@ if (!fileLines.Any())
 
 var tokens = fileLines.Select(x =>
 {
-    var s = x.Split('=', 1);
+    var s = x.Split('=');
     return (s[0], s[1]);
 });
 
@@ -38,17 +38,65 @@ client.Log += message =>
     return Task.CompletedTask;
 };
 
+
 client.Ready += async () =>
 {
-    var guild = client.GetGuild(guildId);
-    builder = await builder
-        .WithGuild(guild)
-        .AddCommand("test-command", "A test command", async command =>
-        {
-            await command.RespondAsync("Command builder responding");
-        });
+    try
+    {
+        var guild = client.GetGuild(guildId);
+        builder.WithGuild(guild);
+        
+        await builder.AddCommand("snippet", "Save a code snippet for later", async command =>
+            {
+                var code = (string) command.Data.Options.First(x => x.Name == "code").Value;
+                var language = (string)  command.Data.Options.First(x => x.Name == "language").Value;
+                var quickId = (string?) command.Data.Options.FirstOrDefault(x => x.Name == "quick-id")?.Value;
 
-    client.SlashCommandExecuted += builder.HandleIncomingSlashCommands;
+                var embedBuilder = new EmbedBuilder()
+                    .WithAuthor(command.User)
+                    .WithTitle("Snippet - " + language)
+                    .WithDescription(code)
+                    .WithColor(Color.Gold)
+                    .WithCurrentTimestamp();
+
+                await command.RespondAsync(embed: embedBuilder.Build());
+
+            }, new SlashCommandOptionBuilder()
+            {
+                Name = "code",
+                Type = ApplicationCommandOptionType.String,
+                IsRequired = true,
+                Description = "Code snippet to save"
+            }, new SlashCommandOptionBuilder()
+            {
+                Name = "language",
+                Type = ApplicationCommandOptionType.String,
+                IsRequired = true,
+                Description = "programming language of snippet"
+            }, new SlashCommandOptionBuilder()
+            {
+                Name = "quick-id",
+                Type = ApplicationCommandOptionType.String,
+                IsRequired = false,
+                Description = "An id to identify this snippet to quickly find it later"
+            });
+
+        await builder.AddCommand("fetch", "fetch a snippet by id", async command =>
+        {
+
+        }, new SlashCommandOptionBuilder()
+        {
+            Name = "id",
+            Description = "Get a snippet by id",
+            Type = ApplicationCommandOptionType.String,
+        });
+            
+        client.SlashCommandExecuted += builder.HandleIncomingSlashCommands;
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+    }
 };
 
 
