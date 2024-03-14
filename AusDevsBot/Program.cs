@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text;
 using AusDevsBot;
 using AusDevsBot.Data;
 using Discord;
@@ -119,14 +120,33 @@ client.Ready += async () =>
                 Description = "An id to identify this snippet to quickly find it later"
             });
 
-        await botCommandBuilder.AddCommand("quick-save", "quick save a message", async command =>
+        await botCommandBuilder.AddCommand("my-snippets", "View your snippets", async command =>
         {
+            var context = host.Services.GetRequiredService<BotDbContext>();
+            var user = await context.Users.FindAsync(command.User.Id);
+            if (user == null || user.NumberOfSnippets == 0)
+            {
+                await command.RespondAsync("Looks like you haven't saved any snippets");
+                return;
+            }
             
-        }, new SlashCommandOptionBuilder()
-        {
-            Name = "quick-id",
-            Type = ApplicationCommandOptionType.String,
-            Description = "An id to identify this snippet to quickly find it later"
+            
+            var description = user.SavedSnippets.Select(x =>
+                $"{x.QuickSaveId ?? x.SnippetId.ToString()} - {x.Content.Substring(0, 30)}.....");
+
+            var sb = new StringBuilder();
+            sb.AppendLine(
+                "+--------------------------------------+-------------------------------------+\n| id                                   | content                             |\n+--------------------------------------+-------------------------------------+");
+
+            foreach (var snip in user.SavedSnippets)
+            {
+                // 36 is length of guid
+                sb.AppendLine($"| {snip.QuickSaveId?.PadRight(36) ?? snip.SnippetId.ToString()} | {snip.Content.Substring(0,30).PadRight(30)}..... |");
+                sb.AppendLine("+--------------------------------------+-------------------------------------+");
+            }
+
+            await command.RespondAsync($"```\n{sb}\n```");
+
         });
             
         client.SlashCommandExecuted += botCommandBuilder.HandleIncomingSlashCommands;
@@ -174,5 +194,6 @@ async Task HandleCommandAsync(SocketMessage messageParam)
     await commands.ExecuteAsync(
         context: context, 
         argPos: argPos,
-        services: null);
+        services: host.Services
+    );
 }
