@@ -57,7 +57,16 @@ public class BotCommandBuilder
             return;
         }
 
-        await _registeredCommands[name].Invoke(command);
+        try
+        {
+            await _registeredCommands[name].Invoke(command);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Looks like the command failed to execute and threw an exception\n {e}");
+            await command.RespondAsync("Oops, looks like im having trouble with that command");
+        }
+        
         
     }
 
