@@ -3,16 +3,16 @@ using Discord.Commands;
 
 namespace AusDevsBot.Commands;
 
-public class QuickSaveCommand : ModuleBase<SocketCommandContext>
+public class QuickSnippetCommand : ModuleBase<SocketCommandContext>
 {
     private BotDbContext _context;
-    public QuickSaveCommand(BotDbContext context)
+    public QuickSnippetCommand(BotDbContext context)
     {
         _context = context;
     }
     
 
-    [Command("save")]
+    [Command("snippet")]
     [Summary("Quick saves a message")]
     public async Task QuickSaveMessage([Remainder] string? quickSaveId = null)
     {
