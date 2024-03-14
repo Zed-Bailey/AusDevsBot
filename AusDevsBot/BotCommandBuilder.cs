@@ -1,7 +1,9 @@
 using System.Collections.Immutable;
+using AusDevsBot.Data;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace AusDevsBot;
@@ -10,10 +12,15 @@ public class BotCommandBuilder
 {
     private SocketGuild _guild;
 
-    private Dictionary<string, Func<SocketSlashCommand, Task>> _registeredCommands = new();
+    // private Dictionary<string, Func<SocketSlashCommand, Task>> _registeredCommands = new();
+    private Dictionary<string, Type> _registeredCommands = new();
 
+    private IServiceProvider _serviceProvider;
 
-    public BotCommandBuilder() { }
+    public BotCommandBuilder(IServiceProvider provider)
+    {
+        _serviceProvider = provider;
+    }
 
     public void WithGuild(SocketGuild guild)
     {
@@ -21,7 +28,8 @@ public class BotCommandBuilder
     }
 
 
-    public async Task AddCommand(string name, string description, Func<SocketSlashCommand, Task> commandHandler, params SlashCommandOptionBuilder[] options)
+    // public async Task AddCommand(string name, string description, Func<SocketSlashCommand, Task> commandHandler, params SlashCommandOptionBuilder[] options)
+    public async Task AddCommand<T>(string name, string description, params SlashCommandOptionBuilder[] options) where T : ISlashCommand
     {
         if (_guild == null)
         {
@@ -32,12 +40,11 @@ public class BotCommandBuilder
             .WithName(name)
             .WithDescription(description)
             .AddOptions(options);
-        
-
         try
         {
             await _guild.CreateApplicationCommandAsync(command.Build());
-            _registeredCommands.Add(name, commandHandler);
+            // _registeredCommands.Add(name, commandHandler);
+            _registeredCommands.Add(name, typeof(T));
         }
         catch (HttpException e)
         {
@@ -59,7 +66,12 @@ public class BotCommandBuilder
 
         try
         {
-            await _registeredCommands[name].Invoke(command);
+            // create a new instance of the class
+            // activator will inject dependencies into constructor from service provider
+            var instance = (ISlashCommand) ActivatorUtilities.CreateInstance(_serviceProvider, _registeredCommands[name]);
+            
+            // handle command
+            await instance.HandleCommand(command);
         }
         catch (Exception e)
         {

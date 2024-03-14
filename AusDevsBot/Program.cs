@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using System.Text;
 using AusDevsBot;
+using AusDevsBot.Commands;
+using AusDevsBot.Commands.SlashCommands;
 using AusDevsBot.Data;
 using Discord;
 using Discord.Commands;
@@ -66,16 +68,16 @@ await commands.AddModulesAsync(
 Console.WriteLine("registered text commands: " + string.Join(',', commands.Commands.Select(x => x.Name)));
 client.MessageReceived += HandleCommandAsync;
 
-
-var botCommandBuilder = new BotCommandBuilder();
-
-
 // todo use serilog
 client.Log += message =>
 {
     Console.WriteLine($"[{message.Severity}] {message.Message}");
     return Task.CompletedTask;
 };
+
+
+
+var botCommandBuilder = new BotCommandBuilder(host.Services);
 
 
 client.Ready += async () =>
@@ -85,69 +87,71 @@ client.Ready += async () =>
         var guild = client.GetGuild(guildId);
         botCommandBuilder.WithGuild(guild);
         
-        await botCommandBuilder.AddCommand("snippet", "Save a code snippet for later", async command =>
-            {
-                var code = (string) command.Data.Options.First(x => x.Name == "code").Value;
-                var language = (string)  command.Data.Options.First(x => x.Name == "language").Value;
-                var quickId = (string?) command.Data.Options.FirstOrDefault(x => x.Name == "quick-id")?.Value;
+        // await botCommandBuilder.AddCommand("snippet", "Save a code snippet for later", async command =>
+        //     {
+        //         var code = (string) command.Data.Options.First(x => x.Name == "code").Value;
+        //         var language = (string)  command.Data.Options.First(x => x.Name == "language").Value;
+        //         var quickId = (string?) command.Data.Options.FirstOrDefault(x => x.Name == "quick-id")?.Value;
+        //
+        //         var embedBuilder = new EmbedBuilder()
+        //             .WithAuthor(command.User)
+        //             .WithTitle("Snippet - " + language)
+        //             .WithDescription(code)
+        //             .WithColor(Color.Gold)
+        //             .WithCurrentTimestamp();
+        //
+        //         await command.RespondAsync(embed: embedBuilder.Build());
+        //
+        //     }, new SlashCommandOptionBuilder()
+        //     {
+        //         Name = "code",
+        //         Type = ApplicationCommandOptionType.String,
+        //         IsRequired = true,
+        //         Description = "Code snippet to save"
+        //     }, new SlashCommandOptionBuilder()
+        //     {
+        //         Name = "language",
+        //         Type = ApplicationCommandOptionType.String,
+        //         IsRequired = true,
+        //         Description = "programming language of snippet"
+        //     }, new SlashCommandOptionBuilder()
+        //     {
+        //         Name = "quick-id",
+        //         Type = ApplicationCommandOptionType.String,
+        //         IsRequired = false,
+        //         Description = "An id to identify this snippet to quickly find it later"
+        //     });
+        //
+        // await botCommandBuilder.AddCommand("my-snippets", "View your snippets", async command =>
+        // {
+        //     var context = host.Services.GetRequiredService<BotDbContext>();
+        //     var user = await context.Users.FindAsync(command.User.Id);
+        //     if (user == null || user.NumberOfSnippets == 0)
+        //     {
+        //         await command.RespondAsync("Looks like you haven't saved any snippets");
+        //         return;
+        //     }
+        //     
+        //     
+        //     var description = user.SavedSnippets.Select(x =>
+        //         $"{x.QuickSaveId ?? x.SnippetId.ToString()} - {x.Content.Substring(0, 30)}.....");
+        //
+        //     var sb = new StringBuilder();
+        //     sb.AppendLine(
+        //         "+--------------------------------------+-------------------------------------+\n| id                                   | content                             |\n+--------------------------------------+-------------------------------------+");
+        //
+        //     foreach (var snip in user.SavedSnippets)
+        //     {
+        //         // 36 is length of guid
+        //         sb.AppendLine($"| {snip.QuickSaveId?.PadRight(36) ?? snip.SnippetId.ToString()} | {snip.Content.Substring(0,30).PadRight(30)}..... |");
+        //         sb.AppendLine("+--------------------------------------+-------------------------------------+");
+        //     }
+        //
+        //     await command.RespondAsync($"```\n{sb}\n```");
+        //
+        // });
 
-                var embedBuilder = new EmbedBuilder()
-                    .WithAuthor(command.User)
-                    .WithTitle("Snippet - " + language)
-                    .WithDescription(code)
-                    .WithColor(Color.Gold)
-                    .WithCurrentTimestamp();
-
-                await command.RespondAsync(embed: embedBuilder.Build());
-
-            }, new SlashCommandOptionBuilder()
-            {
-                Name = "code",
-                Type = ApplicationCommandOptionType.String,
-                IsRequired = true,
-                Description = "Code snippet to save"
-            }, new SlashCommandOptionBuilder()
-            {
-                Name = "language",
-                Type = ApplicationCommandOptionType.String,
-                IsRequired = true,
-                Description = "programming language of snippet"
-            }, new SlashCommandOptionBuilder()
-            {
-                Name = "quick-id",
-                Type = ApplicationCommandOptionType.String,
-                IsRequired = false,
-                Description = "An id to identify this snippet to quickly find it later"
-            });
-
-        await botCommandBuilder.AddCommand("my-snippets", "View your snippets", async command =>
-        {
-            var context = host.Services.GetRequiredService<BotDbContext>();
-            var user = await context.Users.FindAsync(command.User.Id);
-            if (user == null || user.NumberOfSnippets == 0)
-            {
-                await command.RespondAsync("Looks like you haven't saved any snippets");
-                return;
-            }
-            
-            
-            var description = user.SavedSnippets.Select(x =>
-                $"{x.QuickSaveId ?? x.SnippetId.ToString()} - {x.Content.Substring(0, 30)}.....");
-
-            var sb = new StringBuilder();
-            sb.AppendLine(
-                "+--------------------------------------+-------------------------------------+\n| id                                   | content                             |\n+--------------------------------------+-------------------------------------+");
-
-            foreach (var snip in user.SavedSnippets)
-            {
-                // 36 is length of guid
-                sb.AppendLine($"| {snip.QuickSaveId?.PadRight(36) ?? snip.SnippetId.ToString()} | {snip.Content.Substring(0,30).PadRight(30)}..... |");
-                sb.AppendLine("+--------------------------------------+-------------------------------------+");
-            }
-
-            await command.RespondAsync($"```\n{sb}\n```");
-
-        });
+        await botCommandBuilder.AddCommand<SnippetStats>("snippet-stats", "See the snippet stats");
             
         client.SlashCommandExecuted += botCommandBuilder.HandleIncomingSlashCommands;
     }
