@@ -1,8 +1,11 @@
 ﻿using System.Reflection;
 using AusDevsBot;
+using AusDevsBot.Data;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -29,6 +32,12 @@ ulong guildId = ulong.Parse(tokens.First(x => x.Item1 == "GUILD_ID").Item2);;
 
 
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddDbContext<BotDbContext>(options =>
+{
+    options.UseSqlite(builder.Configuration.GetConnectionString("DbContext"));
+    options.UseLazyLoadingProxies();
+});
 
 var socketConfig = new DiscordSocketConfig()
 {
