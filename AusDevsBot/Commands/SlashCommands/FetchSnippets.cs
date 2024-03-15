@@ -30,8 +30,9 @@ public class FetchSnippets
 
             const int perPage = 5;
             
-            var page = ((long?) command.Data.Options.FirstOrDefault(x => x.Name == "page")?.Value) ?? 0;
-            var skipAmount = Convert.ToInt32(page) * perPage;
+            var page = ((long?) command.Data.Options.FirstOrDefault(x => x.Name == "page")?.Value) ?? 1;
+            // minus 1 to zero index the page
+            var skipAmount = Convert.ToInt32(page - 1) * perPage;
             var snippets = user.SavedSnippets.Skip(skipAmount).Take(perPage);
             
             var sb = new StringBuilder();
@@ -40,11 +41,16 @@ public class FetchSnippets
             
             foreach (var snip in snippets)
             {
+                
                 // 36 is length of guid
-                sb.AppendLine($"| {snip.QuickSaveId?.PadRight(36) ?? snip.SnippetId.ToString()} | {snip.Content.Substring(0,30).PadRight(30)}..... |");
+                sb.AppendLine($"| {snip.QuickSaveId?.PadRight(36) ?? snip.SnippetId.ToString()} | {snip.Content.Replace('\n', ' ').Substring(0,30).PadRight(30)}..... |");
                 sb.AppendLine("+--------------------------------------+-------------------------------------+");
             }
             
+            int pages = ((user.NumberOfSnippets - 1) / perPage) + 1;
+            
+            sb.AppendLine($"page {page}/{pages}");
+                
             await command.RespondAsync($"```\n{sb}\n```");
         }
     }
