@@ -16,12 +16,10 @@ public class QuickSnippetCommand : ModuleBase<SocketCommandContext>
     [Summary("Quick saves a message")]
     public async Task QuickSaveMessage([Remainder] string? quickSaveId = null)
     {
-        Console.WriteLine("triggered");
+        
         var replyMsg = Context.Message.ReferencedMessage;
         if (replyMsg == null)
         {
-            Console.WriteLine("reply msg was null");
-            
             await ReplyAsync("To quick save you must reply to a message", messageReference: Context.Message.Reference);
             return;
         }
@@ -37,7 +35,6 @@ public class QuickSnippetCommand : ModuleBase<SocketCommandContext>
         var user = await _context.Users.FindAsync(Context.User.Id);
         if (user == null)
         {
-            Console.WriteLine("Created a new user");
             // create a new user
             var newUser = new User()
             {
@@ -47,10 +44,6 @@ public class QuickSnippetCommand : ModuleBase<SocketCommandContext>
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
             user = newUser;
-        }
-        else
-        {
-            Console.WriteLine("Found pre-exisiting user");
         }
 
         snippet.User = user;
