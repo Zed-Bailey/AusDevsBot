@@ -27,8 +27,7 @@ public class BotCommandBuilder
         _guild = guild;
     }
 
-
-    // public async Task AddCommand(string name, string description, Func<SocketSlashCommand, Task> commandHandler, params SlashCommandOptionBuilder[] options)
+    
     public async Task AddCommand<T>(string name, string description, params SlashCommandOptionBuilder[] options) where T : ISlashCommand
     {
         if (_guild == null)
@@ -43,7 +42,6 @@ public class BotCommandBuilder
         try
         {
             await _guild.CreateApplicationCommandAsync(command.Build());
-            // _registeredCommands.Add(name, commandHandler);
             _registeredCommands.Add(name, typeof(T));
         }
         catch (HttpException e)
@@ -66,6 +64,7 @@ public class BotCommandBuilder
 
         try
         {
+            // https://stackoverflow.com/questions/37189984/dependency-injection-with-classes-other-than-a-controller-class
             // create a new instance of the class
             // activator will inject dependencies into constructor from service provider
             var instance = (ISlashCommand) ActivatorUtilities.CreateInstance(_serviceProvider, _registeredCommands[name]);
