@@ -47,6 +47,7 @@ var socketConfig = new DiscordSocketConfig()
     GatewayIntents = GatewayIntents.MessageContent | GatewayIntents.AllUnprivileged
 };
 
+// socket config has to be added before the client
 builder.Services.AddSingleton(socketConfig);
 builder.Services.AddSingleton<DiscordSocketClient>();
 
@@ -59,7 +60,7 @@ CommandService commands = new CommandService(new CommandServiceConfig()
 {
     CaseSensitiveCommands = false,
 });
-
+// add all the text based commands
 await commands.AddModulesAsync(
     assembly: Assembly.GetEntryAssembly(), 
     services: host.Services
@@ -86,6 +87,8 @@ client.Ready += async () =>
     {
         var guild = client.GetGuild(guildId);
         botCommandBuilder.WithGuild(guild);
+        
+        // register all the slash commands
         
         await botCommandBuilder.AddCommand<SaveSnippet>("snippet", "Save a snippet for later", new SlashCommandOptionBuilder()
             {
@@ -144,11 +147,6 @@ client.Ready += async () =>
 
 await client.LoginAsync(TokenType.Bot, discordToken);
 await client.StartAsync();
-
-
-
-
-
 
 
 host.Run();
