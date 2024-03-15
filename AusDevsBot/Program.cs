@@ -87,41 +87,20 @@ client.Ready += async () =>
         var guild = client.GetGuild(guildId);
         botCommandBuilder.WithGuild(guild);
         
-        // await botCommandBuilder.AddCommand("snippet", "Save a code snippet for later", async command =>
-        //     {
-        //         var code = (string) command.Data.Options.First(x => x.Name == "code").Value;
-        //         var language = (string)  command.Data.Options.First(x => x.Name == "language").Value;
-        //         var quickId = (string?) command.Data.Options.FirstOrDefault(x => x.Name == "quick-id")?.Value;
-        //
-        //         var embedBuilder = new EmbedBuilder()
-        //             .WithAuthor(command.User)
-        //             .WithTitle("Snippet - " + language)
-        //             .WithDescription(code)
-        //             .WithColor(Color.Gold)
-        //             .WithCurrentTimestamp();
-        //
-        //         await command.RespondAsync(embed: embedBuilder.Build());
-        //
-        //     }, new SlashCommandOptionBuilder()
-        //     {
-        //         Name = "code",
-        //         Type = ApplicationCommandOptionType.String,
-        //         IsRequired = true,
-        //         Description = "Code snippet to save"
-        //     }, new SlashCommandOptionBuilder()
-        //     {
-        //         Name = "language",
-        //         Type = ApplicationCommandOptionType.String,
-        //         IsRequired = true,
-        //         Description = "programming language of snippet"
-        //     }, new SlashCommandOptionBuilder()
-        //     {
-        //         Name = "quick-id",
-        //         Type = ApplicationCommandOptionType.String,
-        //         IsRequired = false,
-        //         Description = "An id to identify this snippet to quickly find it later"
-        //     });
-        //
+        await botCommandBuilder.AddCommand<SaveSnippet>("snippet", "Save a snippet for later", new SlashCommandOptionBuilder()
+            {
+                Name = "content",
+                Type = ApplicationCommandOptionType.String,
+                IsRequired = true,
+                Description = "Snippet to save"
+            }, new SlashCommandOptionBuilder()
+            {
+                Name = "quick-id",
+                Type = ApplicationCommandOptionType.String,
+                IsRequired = false,
+                Description = "An id to identify this snippet to quickly find it later"
+            });
+        
         
         await botCommandBuilder.AddCommand<FetchSnippets.DetailSnippet>("detail", "View an entire snippet",
             new SlashCommandOptionBuilder()
@@ -140,8 +119,20 @@ client.Ready += async () =>
             Type = ApplicationCommandOptionType.Integer
         });
 
+        
         await botCommandBuilder.AddCommand<SnippetStats>("snippet-stats", "See the snippet stats");
             
+        
+        
+        await botCommandBuilder.AddCommand<DeleteSnippet>("delete", "Delete a snippet",
+            new SlashCommandOptionBuilder()
+            {
+                Name = "id",
+                Description = "Id of the snippet to delete, either guid or quick-save id",
+                IsRequired = true,
+                Type = ApplicationCommandOptionType.String
+            });
+        
         client.SlashCommandExecuted += botCommandBuilder.HandleIncomingSlashCommands;
     }
     catch (Exception e)
