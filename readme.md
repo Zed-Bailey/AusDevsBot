@@ -18,21 +18,31 @@ The bot is developed with C# and the Discord.NET library and makes use of Sqlite
 
 ## Functionality
 
-## Save snippet
+### Save snippet
 - `!snippet` - used in reply to a post, allows you to snippet a whole post
 - `/snippet {snippet} {language} {optional quick tag}`
 
-## Fetch Snippets
+### Fetch Snippets
 - `/my-snippets {page number}` - displays snippets with paging parameter
 - `/detail {id}` - prints the entire snippet with the corresponding id
 
-## Stats
+### Stats
 - `/snippet-stats` - displays snippet stats
 
-## Edit
+### Edit
 - `/rename {id} {new id}` - updates the quicksave id for a snippet
 - `/set-content {id} {new content}` - updates the snippet content
 - `!set-content {id}` - updates the content of the snippet with the corresponding id with the content in the replied message
 
-## Delete
+### Delete
 - `/delete {id}` - delete the snippet with the corresponding id
+
+
+## Images
+
+some images of the bot in action
+
+<img src="docs/my-snippets.png">
+<img src="docs/detail.png">
+<img src="docs/save-snippet.png">
+<img src="docs/stat.png">

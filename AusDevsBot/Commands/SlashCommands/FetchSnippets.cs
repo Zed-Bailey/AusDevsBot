@@ -41,9 +41,13 @@ public class FetchSnippets
             
             foreach (var snip in snippets)
             {
-                
+                var content = snip.Content.Replace('\n', ' ');
+                if (content.Length > 30)
+                {
+                    content = content.Substring(0, 30);
+                }
                 // 36 is length of guid
-                sb.AppendLine($"| {snip.QuickSaveId?.PadRight(36) ?? snip.SnippetId.ToString()} | {snip.Content.Replace('\n', ' ').Substring(0,30).PadRight(30)}..... |");
+                sb.AppendLine($"| {snip.QuickSaveId?.PadRight(36) ?? snip.SnippetId.ToString()} | {content.PadRight(30)}..... |");
                 sb.AppendLine("+--------------------------------------+-------------------------------------+");
             }
             
