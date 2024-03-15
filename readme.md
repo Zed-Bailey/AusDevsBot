@@ -12,7 +12,7 @@ The bot is developed with C# and the Discord.NET library and makes use of Sqlite
 - create a discord bot and generate the token ((see this article for how to do that)[https://www.writebots.com/discord-bot-token/])
   - **Important**: make sure you check the `bot` and `application.commands` scopes when creating the oauth url for the bot
   - **Important**: make sure to check the `Read Messages`, `Send Messages`, `Manage Messages` and `Use Slash Commands` permissions
-
+  - **Important**: make sure you have enabled the message content privileged intent
 
 
 
