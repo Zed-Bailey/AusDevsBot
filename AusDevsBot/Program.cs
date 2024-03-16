@@ -119,12 +119,12 @@ client.Ready += async () =>
             Name = "page",
             IsRequired = false,
             Description = "The page of snippets to get",
-            Type = ApplicationCommandOptionType.Integer
+            Type = ApplicationCommandOptionType.Integer,
+            MinValue = 0
         });
 
         
         await botCommandBuilder.AddCommand<SnippetStats>("snippet-stats", "See the snippet stats");
-            
         
         
         await botCommandBuilder.AddCommand<DeleteSnippet>("delete", "Delete a snippet",
@@ -132,6 +132,22 @@ client.Ready += async () =>
             {
                 Name = "id",
                 Description = "Id of the snippet to delete, either guid or quick-save id",
+                IsRequired = true,
+                Type = ApplicationCommandOptionType.String
+            });
+        
+        await botCommandBuilder.AddCommand<EditSnippet.RenameSnippet>("rename", "Rename a snippets id",
+            new SlashCommandOptionBuilder()
+            {
+                Name = "id",
+                Description = "Current id of the snippet to update, either guid or quick-save id",
+                IsRequired = true,
+                Type = ApplicationCommandOptionType.String
+            },
+            new SlashCommandOptionBuilder()
+            {
+                Name = "new-id",
+                Description = "The new id of the snippet",
                 IsRequired = true,
                 Type = ApplicationCommandOptionType.String
             });

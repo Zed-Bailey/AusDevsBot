@@ -14,13 +14,18 @@ The bot is developed with C# and the Discord.NET library and makes use of Sqlite
   - **Important**: make sure to check the `Read Messages`, `Send Messages`, `Manage Messages` and `Use Slash Commands` permissions
   - **Important**: make sure you have enabled the message content privileged intent
 
+## Improvements
+There are a lot of improvements that can be added to this bot
+- Support programming languages (already added to the model just not implemented)
+- download snippet as a file (json/xml/text)
+- remove the duplicated logic between each command for finding a snippet by guid/quick-save id
 
 
 ## Functionality
 
 ### Save snippet
 - `!snippet` - used in reply to a post, allows you to snippet a whole post
-- `/snippet {snippet} {language} {optional quick tag}`
+- `/snippet {snippet} {optional quick tag}`
 
 ### Fetch Snippets
 - `/my-snippets {page number}` - displays snippets with paging parameter
@@ -38,11 +43,19 @@ The bot is developed with C# and the Discord.NET library and makes use of Sqlite
 - `/delete {id}` - delete the snippet with the corresponding id
 
 
+
 ## Images
 
 some images of the bot in action
 
+### Viewing snippets
 <img src="docs/my-snippets.png">
+
+### Snippet detail
 <img src="docs/detail.png">
+
+### Save a snippet
 <img src="docs/save-snippet.png">
+
+### View your snippet stats
 <img src="docs/stat.png">
